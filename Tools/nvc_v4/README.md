@@ -4,4 +4,5 @@
 - Validation: animal-level outer LOSO; PREVOID/VOID are challenge-only.
 - Code dependencies: neutral `Tools.dsd_feature_extraction` utilities only.
 - Run: `python -m Tools.nvc_v4.run`.
+- Figures only: `python -m Tools.nvc_v4.visualization`.
 - Results: `data/NVC_V4`.

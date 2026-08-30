@@ -6,4 +6,5 @@
 - Code dependencies: neutral `Tools.dsd_feature_extraction` utilities only.
 - Five-model run: `python -m Tools.nvc_v5.run_parallel`.
 - Final replay: `python -m Tools.nvc_v5.run_final_validation`.
+- Figures only: `python -m Tools.nvc_v5.visualization`.
 - Results: `data/NVC_V5`.

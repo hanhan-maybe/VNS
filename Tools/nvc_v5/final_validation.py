@@ -578,6 +578,8 @@ def run_final_validation(output_root=C.OUTPUT_ROOT / "v5_final_validation"):
     (output_root/"v5_final_summary.json").write_text(json.dumps(_jsonable(summary),ensure_ascii=False,indent=2),encoding="utf-8")
     report=["# V5 Final Offline Validation — M1 P-EARLY","","## Frozen scope","- Only the already-selected M1 P-EARLY is evaluated; M2/M3/M4 are not rerun.","- F37 B01–B04→B05–B07; F26 B01–B13→B14–B16; no pooling.","- PREVOID/VOID are post-hoc audit labels only; no online veto.","","## Runtime correction","- OLD_RUNTIME allowed score-positive segments to trigger directly.","- CORRECTED_RUNTIME requires an existing causal pressure candidate, binds the latch to candidate_event_id, and resets at pressure recovery.","- Frozen M1 feature schema, scaler, coefficients, thresholds, and prospective splits are unchanged.","", "## OLD_RUNTIME vs CORRECTED_RUNTIME", runtime_comparison.to_markdown(index=False),"","## T0/T1 comparison",comparison.to_markdown(index=False),"","## F26 B15",b15.to_markdown(index=False),"", "### F26 B15 trigger-level audit", b15_detail.to_markdown(index=False),"","## Post-hoc trigger overlap",overlap.to_markdown(index=False),"","## Frozen reconstruction audit",reconstruction.to_markdown(index=False),"","## Completeness",json.dumps(completeness,ensure_ascii=False,indent=2),"","development_only=true; deployment_ready=false; stimulation_enabled=false."]
     (output_root/"V5_FINAL_OFFLINE_REPORT.md").write_text("\n".join(report),encoding="utf-8")
+    from .visualization import generate_plots
+    generate_plots(C.OUTPUT_ROOT)
     return summary
 
 

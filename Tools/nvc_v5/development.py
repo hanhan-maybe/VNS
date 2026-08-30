@@ -385,6 +385,8 @@ def run(output_root: Path = C.OUTPUT_ROOT):
     (output_root / "v5_summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     report = ["# V5 Individualized Prospective NVC Detection", "", "## Task", "- NVC_CORE vs STABLE_FILLING; PREVOID/VOID are challenge-only.", "- F26 and F37 are fitted separately; no cross-animal pooling.", "", "## Fixed prospective splits", pd.DataFrame([{"animal": s, "train_cycles": "|".join(C.SPLITS[s]["train"]), "test_cycles": "|".join(C.SPLITS[s]["test"]), "train_nvc": summary["train_nvc"][s], "test_nvc": summary["test_nvc"][s]} for s in C.SUBJECTS]).to_markdown(index=False), "", "## Individual model results", results.drop(columns=[c for c in results.columns if c.startswith("_")], errors="ignore").to_markdown(index=False), "", "## Calibration length", cal.to_markdown(index=False) if len(cal) else "No calibration-length results.", "", "## Status", json.dumps(statuses, ensure_ascii=False, indent=2), "", "development_only=true; deployment_ready=false; real_VNS_enabled=false."]
     (output_root / "V5_REPORT.md").write_text("\n".join(report), encoding="utf-8")
+    from .visualization import generate_plots
+    generate_plots(output_root)
     return summary
 
 

@@ -634,6 +634,8 @@ def run(v21_root: Path, v2_root: Path, cycles_164_root: Path, labels_164_path: P
     write_json(output_root / "feature_schema_v3.json", schema)
     (output_root / "V3_REPORT.md").write_text(
         report_text(summary, comparison, fold_metrics), encoding="utf-8")
+    from .visualization import generate_plots
+    generate_plots(output_root)
     return summary
 
 

@@ -95,6 +95,8 @@ def run(output_root: Path=C.OUTPUT_ROOT):
     write_json(output_root/"v4_summary.json",summary)
     report=["# V4 NVC feature learning","","## 1. Task and cohort\n- Primary task: NVC_CORE vs STABLE_FILLING\n- 338 + 164 remain development-only; 164 is not external validation\n- NVC samples: %d; stable samples: %d"%(summary["positive_nvc"],summary["stable_filling"]),"","## 2. V3.1 reproduction\n- %s"%summary["v31_reproduction"],"","## 3. Parallel models",comp.to_markdown(index=False),"","## 4. Feature stability\nPer-animal median differences and direction consistency are in `v4_feature_stability.csv`; 75%% is descriptive only.","","## 5. Common-scorable comparison\nSee `v4_common_scorable_comparison.csv`.","","## 6. Within-animal upper bound\nSee `v4_within_animal_upper_bound.csv`; this is diagnostic, not external validation.","","## 7. PREVOID / VOID challenge\nChallenges were scored only after models and thresholds were frozen; they were not used for fitting or threshold selection.","","## 8. Interpretation\nThe principal question is whether NVC has reproducible pressure/EUS features against stable filling; PREVOID is not a training negative in V4.","","## 9. Status\n- development_status: COMPLETED_DEVELOPMENT_ONLY\n- deployment_ready: false\n- stimulation_enabled: false"]
     (output_root/"V4_REPORT.md").write_text("\n".join(report),encoding="utf-8")
+    from .visualization import generate_plots
+    generate_plots(output_root)
     return summary
 
 if __name__=="__main__": run()

@@ -485,3 +485,34 @@ python -c "import sonpy; print('SonPy: PASS')"
 7. 冻结最终输出、配置、报告和SHA256
 8. 后续再开展排尿前事件标注/普查和在线算法开发
 ```
+
+---
+
+## 13. V3–V5 结果图片
+
+已有冻结结果时，可只生成汇报图片而不重新训练：
+
+```powershell
+python -m Tools.generate_nvc_figures
+```
+
+图片分别写入：
+
+```text
+data/NVC_V3/plots/
+data/NVC_V3_1/plots/
+data/NVC_V3_2/plots/
+data/NVC_V4/plots/
+data/NVC_V5/plots/
+```
+
+每个版本的正常训练入口也会在结果表写完后自动刷新本版本图片。各版本绘图模块只读取本版本结果目录，不互相导入。
+
+统一入口会执行图片完整性验收，当前最低要求为：V3 4张、V3.1 4张、V3.2 5张、V4 5张、V5 7张。任何版本数量不足时命令返回失败，避免“结果已生成但图片静默缺失”。检查结果写入：
+
+```text
+data/NVC_REPORTING/FIGURE_STATUS.md
+data/NVC_REPORTING/FIGURE_MANIFEST.csv
+```
+
+其中 `FIGURE_MANIFEST.csv` 记录每张图片的版本、路径、文件大小和完整性状态；每个版本目录内的 `plots/PLOT_INDEX.md` 说明图片的汇报用途。

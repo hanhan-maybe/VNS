@@ -484,6 +484,8 @@ def run_parallel(output_root=C.OUTPUT_ROOT):
     (output_root/"v5_parallel_summary.json").write_text(json.dumps(summary,ensure_ascii=False,indent=2,default=str),encoding="utf-8")
     report=["# V5 parallel individualized NVC development","","Five independent models: R0, M1 P-EARLY, M2 E-EARLY, M3 PE-EARLY, M4 EUS-SP-LASSO.","","## Fixed prospective splits",pd.DataFrame([{"animal":s,"train":"|".join(C.SPLITS[s]["train"]),"test":"|".join(C.SPLITS[s]["test"])} for s in C.SUBJECTS]).to_markdown(index=False),"","## Results",results.to_markdown(index=False),"","## EUS E0/E1 ablation",ab.to_markdown(index=False),"","## Status",json.dumps(status,ensure_ascii=False,indent=2),"","development_only=true; deployment_ready=false; stimulation=false."]
     (output_root/"V5_PARALLEL_REPORT.md").write_text("\n".join(report),encoding="utf-8")
+    from .visualization import generate_plots
+    generate_plots(output_root)
     return summary
 
 

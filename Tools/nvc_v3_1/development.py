@@ -571,6 +571,8 @@ def run(v3_root: Path = DEFAULT_V3_ROOT, output_root: Path = DEFAULT_OUTPUT_ROOT
     (output_root / "V3_1_REPORT.md").write_text(
         _report(summary, comparison, delay_metrics, model_animals), encoding="utf-8")
     _plot_outputs(output_root, baseline_predictions, delay_metrics, aligned, stability, missing, comparison)
+    from .visualization import generate_plots
+    generate_plots(output_root)
     return summary
 
 
