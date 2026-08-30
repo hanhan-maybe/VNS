@@ -1,0 +1,4 @@
+"""V4 NVC feature-learning development package."""
+from .config import SUBJECTS, PRIMARY_SCORE_STAGE, M1_FEATURES, M2_FEATURES, FUSION_FEATURES
+
+__all__ = ["SUBJECTS", "PRIMARY_SCORE_STAGE", "M1_FEATURES", "M2_FEATURES", "FUSION_FEATURES"]

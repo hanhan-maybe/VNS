@@ -1,0 +1,34 @@
+# ========= Python 部分 =========
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.codex_tmp/
+
+# ========= CubeIDE STM32编译产物 =========
+.build/
+.debug/
+.settings/
+*.elf
+*.hex
+*.bin
+*.o
+*.d
+*.s
+*.lst
+
+# ========= 数据文件夹（重点！不上传数据集） =========
+data/
+outputs/
+Tools.zip
+
+# ========= VSCode配置 =========
+.vscode/
+
+# ========= 临时文件 =========
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

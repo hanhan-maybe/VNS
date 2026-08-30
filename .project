@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+    <name>VNS_N6</name>
+    <comment>VNS on NUCLEO-N657X0-Q (STM32N657X0, FreeRTOS)</comment>
+    <projects>
+    </projects>
+    <buildSpec>
+        <buildCommand>
+            <name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
+            <triggers>clean,full,incremental,</triggers>
+            <arguments>
+            </arguments>
+        </buildCommand>
+        <buildCommand>
+            <name>org.eclipse.cdt.managedbuilder.core.ScannerConfigBuilder</name>
+            <triggers>full,incremental,</triggers>
+            <arguments>
+            </arguments>
+        </buildCommand>
+    </buildSpec>
+    <natures>
+        <nature>com.st.stm32cube.ide.mcu.MCUProjectNature</nature>
+        <nature>com.st.stm32cube.ide.mcu.MCUFrameworkNature</nature>
+        <nature>org.eclipse.cdt.core.cnature</nature>
+        <nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
+        <nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
+    </natures>
+    <linkedResources>
+        <link>
+            <name>Drivers/CMSIS</name>
+            <type>2</type>
+            <locationURI>STM32CubeN6_REPO/Drivers/CMSIS</locationURI>
+        </link>
+        <link>
+            <name>Drivers/STM32N6xx_HAL_Driver</name>
+            <type>2</type>
+            <locationURI>STM32CubeN6_REPO/Drivers/STM32N6xx_HAL_Driver</locationURI>
+        </link>
+        <link>
+            <name>Middlewares/FreeRTOS</name>
+            <type>2</type>
+            <locationURI>STM32CubeN6_REPO/Middlewares/Third_Party/FreeRTOS</locationURI>
+        </link>
+        <link>
+            <name>USB_DEVICE</name>
+            <type>2</type>
+            <locationURI>STM32CubeN6_REPO/Middlewares/ST/STM32_USB_Device_Library</locationURI>
+        </link>
+    </linkedResources>
+    <filteredResources>
+    </filteredResources>
+</projectDescription>

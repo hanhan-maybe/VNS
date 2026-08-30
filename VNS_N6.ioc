@@ -1,0 +1,77 @@
+#MicroXplorer Configuration settings - do not modify
+#File generated with STM32CubeMX for NUCLEO-N657X0-Q board
+#Target: STM32N657X0
+
+#RCC
+RCC.HSE=true
+RCC.HSE_VALUE=24000000
+RCC.PLL=true
+RCC.PLLSource=HSE
+RCC.PLLM=3
+RCC.PLLN=75
+RCC.PLLP=RCC_PLLP_DIV2
+RCC.PLLQ=RCC_PLLQ_DIV2
+RCC.PLLR=RCC_PLLR_DIV2
+RCC.SYSCLKSource=RCC_SYSCLKSOURCE_PLLCLK
+RCC.HCLKPrescaler=RCC_HCLK_DIV1
+RCC.APB1Prescaler=RCC_APB1_DIV2
+RCC.APB2Prescaler=RCC_APB2_DIV1
+
+#USART1 (Debug Log)
+USART1.Mode=Asynchronous
+USART1.BaudRate=115200
+USART1.WordLength=8
+USART1.StopBits=1
+USART1.Parity=None
+USART1.OverSampling=16
+# USART1 TX=PA9, RX=PA10, AF=AF7
+
+#USB_OTG_FS (Virtual COM Port)
+USB_OTG_FS.Mode=Device_Only
+USB_OTG_FS.VirtualComPort=true
+# USB D+=PA12, D-=PA11, ID=PA10
+# USB Power Switch=PC5
+
+#TIM6 (1kHz Base Tick)
+TIM6.Prescaler=99
+TIM6.Period=999
+TIM6.CounterMode=Up
+TIM6.AutoReloadPreload=Disable
+TIM6.NVIC=TIM6_IRQn
+
+#GPIO
+# Stim Trigger Output: PA0, Output PP, Low
+PA0.GPIO_Mode=GPIO_MODE_OUTPUT_PP
+PA0.GPIO_Pull=GPIO_NOPULL
+
+# User Button: PC13, Input, PullUp
+PC13.GPIO_Mode=GPIO_MODE_INPUT
+PC13.GPIO_Pull=GPIO_PULLUP
+
+# USB Power: PC5, Output PP, High
+PC5.GPIO_Mode=GPIO_MODE_OUTPUT_PP
+PC5.GPIO_Label=USB_PWR_EN
+
+#NVIC
+NVIC.USART1_IRQn=true
+NVIC.USART1_IRQnPreemptPriority=5
+NVIC.TIM6_IRQn=true
+NVIC.TIM6_IRQnPreemptPriority=5
+NVIC.OTG_FS_IRQn=true
+NVIC.OTG_FS_IRQnPreemptPriority=5
+NVIC.DMA1_Channel1_IRQn=true
+NVIC.DMA1_Channel1_IRQnPreemptPriority=0
+
+#FreeRTOS
+FreeRTOS.Tasks=defaultTask:128:1:1:0:0:0:0
+# Additional tasks described in main.h / main.c:
+#  USB_RX, SIGPROC, FEATURE, CLASS, STIM, LOGGER
+
+#Project
+ProjectName=VNS_N6
+Board=NUCLEO-N657X0-Q
+Device=STM32N657X0
+Toolchain=STM32CubeIDE
+ProjectManager.TargetToolchain=STM32CubeIDE
+ProjectManager.FreeRTOSLocation=Middlewares/Third_Party/FreeRTOS
+ProjectManager.DeviceFramework=STM32CubeN6
