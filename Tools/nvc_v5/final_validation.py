@@ -322,6 +322,16 @@ def _replay_cycle(subject, cycle_id, bundle, paths, events, candidate_trace=None
                      "t0_state": t0_state, "t1_state": t1_state, "T1_positive_count": int(t1_count),
                      "t0_trigger": t0_trigger, "t1_trigger": t1_trigger,
                      "candidate_event_end": bool(cand_id and (idx + 1 >= len(trace["candidate_event_id"]) or str(trace["candidate_event_id"][idx + 1]) != cand_id)),
+
+                    # 保存“这一行真正用于算 score 的15维特征”
+                    **{
+                        k: (
+                            row.get(k, np.nan)
+                            if row is not None
+                            else np.nan
+                        )
+                        for k in C.P_EARLY_FEATURES
+                    },
                      "replay_type": "M1_FINAL_FULL_CYCLE_PRESSURE_CANDIDATE_GATED_0P25S"})
         if regular_update:
             previous_idx = idx; previous_positive = positive; previous_valid = valid; previous_event_id = cand_id; 
@@ -467,21 +477,262 @@ def _frozen_config(subject, bundle, split):
             "model_hash": bundle["model_hash"]}
 
 
-def _vectors(subject, split, streams, events, paths):
-    picks = []
-    eg = events[(events.subject == subject) & events.cycle_id.astype(str).isin(tuple(split["test"])) & events.teacher_label.eq("NVC_CORE")]
-    if len(eg):
-        r = eg.iloc[0]; picks.append((str(r.cycle_id), int(r.start_index), "NVC"))
-    stable_cycle = "B15" if subject == "STxF26" else split["test"][0]
-    picks.append((stable_cycle, int(round(27 * C.DP_FS_HZ)), "STABLE"))
-    out=[]
-    for cyc, idx, kind in picks:
-        s=streams[(streams.cycle_id.astype(str)==cyc)&(streams.decision_index.between(max(0,idx-200),idx+301))].copy()
-        if s.empty: continue
-        for r in s.itertuples(index=False):
-            out.append({"animal":subject,"segment_type":kind,"cycle_id":cyc,"timestamp_s":r.time_s,"pressure_input":r.pressure_input,"candidate_active":r.candidate_active,"candidate_event_id":r.candidate_event_id,"candidate_onset_time_s":r.candidate_onset_time_s,"delta_pressure":r.delta_pressure,"score":r.score,"threshold":r.threshold,"t0_state":r.t0_state,"t1_state":r.t1_state,"t0_trigger":r.t0_trigger,"t1_trigger":r.t1_trigger})
-    return pd.DataFrame(out)
+# def _vectors(subject, split, streams, events, paths):
+#     picks = []
+#     eg = events[(events.subject == subject) & events.cycle_id.astype(str).isin(tuple(split["test"])) & events.teacher_label.eq("NVC_CORE")]
+#     if len(eg):
+#         r = eg.iloc[0]; picks.append((str(r.cycle_id), int(r.start_index), "NVC"))
+#     stable_cycle = "B15" if subject == "STxF26" else split["test"][0]
+#     picks.append((stable_cycle, int(round(27 * C.DP_FS_HZ)), "STABLE"))
+#     out=[]
+#     for cyc, idx, kind in picks:
+#         s=streams[(streams.cycle_id.astype(str)==cyc)&(streams.decision_index.between(max(0,idx-200),idx+301))].copy()
+#         if s.empty: continue
+#         for r in s.itertuples(index=False):
+#             out.append({"animal":subject,"segment_type":kind,"cycle_id":cyc,"timestamp_s":r.time_s,"pressure_input":r.pressure_input,"candidate_active":r.candidate_active,"candidate_event_id":r.candidate_event_id,"candidate_onset_time_s":r.candidate_onset_time_s,"delta_pressure":r.delta_pressure,"score":r.score,"threshold":r.threshold,"t0_state":r.t0_state,"t1_state":r.t1_state,"t0_trigger":r.t0_trigger,"t1_trigger":r.t1_trigger})
+#     return pd.DataFrame(out)
 
+def _vectors(subject, split, streams, events, paths):
+    """
+    Export MCU golden vectors directly from the already-computed replay stream.
+
+    IMPORTANT:
+    - Do NOT reload the cycle here.
+    - Do NOT call _stream_row() again here.
+    - The 15 P-EARLY features must come from the same replay row that produced
+      python_score, otherwise Python/C parity is invalid.
+    """
+
+    # 保留 paths 参数只是为了兼容当前调用接口；
+    # 本函数不再使用它重新加载 cycle。
+    _ = paths
+
+    picks = []
+
+    # =========================================================
+    # 1. 选择一个真实 NVC 附近的测试片段
+    # =========================================================
+    eg = events[
+        (events.subject == subject)
+        & events.cycle_id.astype(str).isin(
+            tuple(split["test"])
+        )
+        & events.teacher_label.eq("NVC_CORE")
+    ]
+
+    if len(eg):
+        r = eg.iloc[0]
+
+        picks.append(
+            (
+                str(r.cycle_id),
+                int(r.start_index),
+                "NVC",
+            )
+        )
+
+    # =========================================================
+    # 2. 再选择一个稳定片段
+    # =========================================================
+    stable_cycle = (
+        "B15"
+        if subject == "STxF26"
+        else str(split["test"][0])
+    )
+
+    picks.append(
+        (
+            stable_cycle,
+            int(round(27 * C.DP_FS_HZ)),
+            "STABLE",
+        )
+    )
+
+    # =========================================================
+    # 3. 确认 replay stream 已经包含全部15维 P-EARLY
+    # =========================================================
+    missing_features = [
+        feature_name
+        for feature_name in C.P_EARLY_FEATURES
+        if feature_name not in streams.columns
+    ]
+
+    if missing_features:
+        raise RuntimeError(
+            "Replay stream does not contain the registered "
+            "P-EARLY features. "
+            "Add them inside _replay_cycle() when rows are created. "
+            f"Missing: {missing_features}"
+        )
+
+    out = []
+
+    # =========================================================
+    # 4. 从已经完成 Python 打分的 replay stream 直接取值
+    # =========================================================
+    for cyc, idx, kind in picks:
+
+        s = streams[
+            (
+                streams.cycle_id.astype(str)
+                == str(cyc)
+            )
+            &
+            (
+                streams.decision_index.between(
+                    max(0, idx - 200),
+                    idx + 301,
+                )
+            )
+        ].copy()
+
+        if s.empty:
+            continue
+
+        for r in s.itertuples(index=False):
+
+            decision_index = int(
+                r.decision_index
+            )
+
+            # -------------------------------------------------
+            # 基础 Golden Vector 信息
+            # -------------------------------------------------
+            row = {
+                "animal":
+                    subject,
+
+                "segment_type":
+                    kind,
+
+                "cycle_id":
+                    str(cyc),
+
+                "decision_index":
+                    decision_index,
+
+                "timestamp_s":
+                    r.time_s,
+
+                "pressure_input":
+                    r.pressure_input,
+
+                "candidate_active":
+                    r.candidate_active,
+
+                "candidate_event_id":
+                    r.candidate_event_id,
+
+                "candidate_onset_time_s":
+                    r.candidate_onset_time_s,
+
+                "delta_pressure":
+                    r.delta_pressure,
+
+                # 这里的 score 和下面的15维特征
+                # 必须来自同一条 replay row。
+                "python_score":
+                    r.score,
+
+                "threshold":
+                    r.threshold,
+
+                "python_t0_state":
+                    r.t0_state,
+
+                "python_t1_state":
+                    r.t1_state,
+
+                "python_t0_trigger":
+                    r.t0_trigger,
+
+                "python_t1_trigger":
+                    r.t1_trigger,
+            }
+
+            # -------------------------------------------------
+            # 可选：顺便保存后续 Runtime parity 会用到的字段
+            # -------------------------------------------------
+            row["score_positive"] = getattr(
+                r,
+                "score_positive",
+                False,
+            )
+
+            row["feature_available"] = getattr(
+                r,
+                "feature_available",
+                False,
+            )
+
+            row["recovery_active"] = getattr(
+                r,
+                "recovery_active",
+                False,
+            )
+
+            row["candidate_event_end"] = getattr(
+                r,
+                "candidate_event_end",
+                False,
+            )
+
+            row["T1_positive_count"] = getattr(
+                r,
+                "T1_positive_count",
+                0,
+            )
+
+            # =================================================
+            # 关键修正：
+            #
+            # 不重新调用 _stream_row()
+            # 不重新计算 baseline
+            # 不重新计算 spectrum
+            #
+            # 直接复制产生 python_score 的同一 row 中的15维特征
+            # =================================================
+            for feature_name in C.P_EARLY_FEATURES:
+
+                value = getattr(
+                    r,
+                    feature_name,
+                    np.nan,
+                )
+
+                row[feature_name] = value
+
+            out.append(row)
+
+    # =========================================================
+    # 5. 输出 Golden Vector
+    # =========================================================
+    result = pd.DataFrame(out)
+
+    # 再做一次完整性检查，避免悄悄输出错误 parity vector。
+    if not result.empty:
+
+        required_columns = (
+            list(C.P_EARLY_FEATURES)
+            + [
+                "python_score",
+                "threshold",
+            ]
+        )
+
+        absent = [
+            col
+            for col in required_columns
+            if col not in result.columns
+        ]
+
+        if absent:
+            raise RuntimeError(
+                "MCU parity vector is incomplete. "
+                f"Missing columns: {absent}"
+            )
+
+    return result
 
 def run_final_validation(output_root=C.OUTPUT_ROOT / "v5_final_validation"):
     output_root = Path(output_root); output_root.mkdir(parents=True, exist_ok=True)
