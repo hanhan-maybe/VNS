@@ -56,8 +56,8 @@ int main(void)
 
 
     printf(
-        "rows tested = %zu\n",
-        g_f37_parity_count
+        "rows tested = %lu\n",
+        (unsigned long)g_f37_parity_count
     );
 
 
@@ -85,8 +85,8 @@ int main(void)
         if (!out.valid)
         {
             printf(
-                "Invalid inference at row %zu\n",
-                i
+                "Invalid inference at row %lu\n",
+                (unsigned long)i
             );
 
             return 1;
@@ -176,18 +176,18 @@ int main(void)
     );
 
     printf(
-        "score failures       = %zu\n",
-        score_failures
+        "score failures       = %lu\n",
+        (unsigned long)score_failures
     );
 
     printf(
-        "threshold failures   = %zu\n",
-        threshold_failures
+        "threshold failures   = %lu\n",
+        (unsigned long)threshold_failures
     );
 
     printf(
-        "positive mismatches  = %zu\n",
-        positive_mismatches
+        "positive mismatches  = %lu\n",
+        (unsigned long)positive_mismatches
     );
 
 

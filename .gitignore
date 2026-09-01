@@ -18,6 +18,15 @@ __pycache__/
 *.d
 *.s
 *.lst
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.obj
+*.exe
+.ninja_*
+build.ninja
+Test/v5_results/generated/
 
 # ========= 数据文件夹（重点！不上传数据集） =========
 data/

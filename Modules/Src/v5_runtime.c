@@ -46,10 +46,12 @@ V5RuntimeOutput V5Runtime_Step(V5Runtime *r,
     out.candidate_event_id = candidate.candidate_event_id;
     out.threshold = r->model.threshold;
 
-    if (candidate.recovery_event || !candidate.candidate_active) {
+    if (candidate.recovery_event || candidate.candidate_ended ||
+        !candidate.candidate_active) {
         r->t1_positive_count = 0u;
         r->active_event_id = 0u;
-        if (candidate.recovery_event && r->latched_event_id == candidate.candidate_event_id) {
+        if ((candidate.recovery_event || candidate.candidate_ended) &&
+            r->latched_event_id == candidate.candidate_event_id) {
             r->latched_event_id = 0u;
         }
     } else if (r->active_event_id != candidate.candidate_event_id) {
@@ -74,16 +76,19 @@ V5RuntimeOutput V5Runtime_Step(V5Runtime *r,
             out.t1_trigger = r->t1_positive_count >= 2u &&
                              r->latched_event_id != candidate.candidate_event_id;
 
-            /* First MCU policy: T1 is the real trigger; T0 is telemetry only. */
-            if (out.t1_trigger) r->latched_event_id = candidate.candidate_event_id;
+            /* Frozen deployment policy: T0 latches once per candidate event. */
+            if (out.t0_trigger) r->latched_event_id = candidate.candidate_event_id;
         }
     }
 
     out.t1_positive_count = r->t1_positive_count;
-    out.virtual_trigger = out.t1_trigger;
-    out.stimulation_request = out.t1_trigger &&
+    out.virtual_trigger = out.t0_trigger;
+    out.stimulation_request = out.t0_trigger &&
                               r->stimulation_enabled &&
                               !r->shadow_mode;
+    out.latched_event_id = r->latched_event_id;
+    out.shadow_mode = r->shadow_mode;
+    out.stimulation_enabled = r->stimulation_enabled;
 
     r->sample_index++;
     return out;

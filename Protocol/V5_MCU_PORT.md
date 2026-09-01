@@ -1,4 +1,8 @@
-# V5 MCU C port — phase 1
+# V5 MCU C port
+
+The pressure-only Python-to-C algorithm port and generic SubjectConfig swap
+have passed host validation. See `Protocol/V5_MCU_IMPLEMENTATION_STATUS.md`
+for the authoritative Gate table and remaining STM32/HIL work.
 
 Algorithm source of truth:
 
@@ -18,10 +22,9 @@ Historic code outside `Tools` is not used as an algorithm reference.
 - `Tools/nvc_v5/export_mcu_config.py`: frozen Python model -> C header.
 - `Core/Src/v5_integration_example.c`: 100 Hz integration example.
 
-## What is intentionally not guessed in phase 1
+## Implemented after phase 1
 
-The following must be ported from current Python and verified against the existing
-F26/F37 streaming vectors before STM32 deployment:
+The following are now ported from current Python and verified against F26/F37:
 
 1. `adaptive_local_pressure_events` -> `V5CandidateInput`.
 2. `extract_p_early_features` -> 15-element feature vector.
@@ -30,16 +33,14 @@ F26/F37 streaming vectors before STM32 deployment:
 
 Do not reuse the old `Modules/feature_extraction.*` or `classifier.*` logic.
 
-## Correct development order
+## Remaining development order
 
 1. Freeze current Python V5 final validation.
 2. Run `python -m Tools.nvc_v5.export_mcu_config STxF26` and STxF37.
 3. Compile phase-1 C on PC first.
-4. Port candidate detector from `Tools/dsd_feature_extraction/detectors.py`.
-5. Port P-EARLY from `Tools/nvc_v5/parallel.py` + `feature_extraction.py`.
-6. Replay `F37_F26_streaming_test_vectors.csv` through C.
-7. Require same candidate event IDs, trigger counts and event attribution;
-   trigger time must agree within one 0.25 s update.
-8. Only then integrate STM32N657 HAL/CMSIS.
-9. First in-vivo run: `shadow_mode=true`, `stimulation_enabled=false`.
-10. Only after shadow safety audit enable physical VNS output.
+4. Restore/generate the STM32N657 CubeMX project skeleton from `VNS_N6.ioc`.
+5. Replace portable DFT with a parity-checked CMSIS-DSP FFT if needed.
+6. Run F37/F26 UART/USB HIL and verify the 10 ms deadline.
+7. First in-vivo run: `shadow_mode=true`, `stimulation_enabled=false`.
+8. Only after shadow safety audit may a controlled build explicitly set
+   `V5_ALLOW_PHYSICAL_STIMULATION=1`.

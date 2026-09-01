@@ -12,6 +12,7 @@ typedef struct {
     bool candidate_active;
     uint32_t candidate_event_id;
     bool recovery_event;
+    bool candidate_ended;
 } V5CandidateInput;
 
 typedef struct {
@@ -23,7 +24,7 @@ typedef struct {
     uint32_t sample_index;
     uint32_t active_event_id;
     uint32_t latched_event_id;
-    uint32_t t1_positive_count;
+    uint32_t t1_positive_count; /* Debug telemetry only. */
 } V5Runtime;
 
 typedef struct {
@@ -39,6 +40,9 @@ typedef struct {
     bool t1_trigger;
     bool virtual_trigger;
     bool stimulation_request;
+    uint32_t latched_event_id;
+    bool shadow_mode;
+    bool stimulation_enabled;
 } V5RuntimeOutput;
 
 void V5Runtime_Init(V5Runtime *r);
